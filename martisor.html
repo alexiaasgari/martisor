@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Mărtișor Invite</title>
+  <style>
+    :root{
+      --red:#d33;
+      --text:#111;
+      --muted:#666;
+      --border:#e6e6e6;
+      --bg:#fff;
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      background:#fff;
+      color:var(--text);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    .banner{
+      width:min(1300px, 100%);
+      height:260px;
+      margin:0 auto;
+      display:flex;
+      align-items:center;
+      gap:28px;
+      padding:18px 26px;
+    }
+
+    .logo-wrap{
+      flex: 1 1 62%;
+      min-width: 320px;
+      height:100%;
+      display:flex;
+      align-items:center;
+    }
+
+    .logo{
+      width:100%;
+      height:auto;
+      max-height: 220px;
+      object-fit:contain;
+      display:block;
+    }
+
+    .copy{
+      flex: 0 1 460px;
+      max-width: 520px;
+      line-height: 1.25;
+      font-size: 16px;
+    }
+
+    .copy p{ margin:0 0 10px 0; }
+
+    .date{
+      color: var(--red);
+      font-weight: 600;
+    }
+
+    .cta-line{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-size: 15px;
+      margin-top: 2px;
+      user-select:none;
+      white-space:nowrap;
+      flex-wrap:wrap;
+    }
+
+    .chev{ color: var(--text); }
+
+    .cta{
+      color: var(--text);
+      text-decoration:none;
+      border-bottom: 1px solid transparent;
+      padding-bottom: 1px;
+    }
+    .cta:hover{ border-bottom-color: var(--text); }
+
+    .address{
+      display:inline-block;
+      margin-left: 6px;
+      font-weight: 600;
+      opacity:0;
+      transform: translateY(-2px);
+      transition: opacity .18s ease, transform .18s ease;
+    }
+    .address.show{
+      opacity:1;
+      transform: translateY(0);
+    }
+
+    .address a{
+      color: inherit;
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+      padding-bottom: 1px;
+    }
+    .address a:hover{ border-bottom-color: var(--text); }
+
+    .calendar-actions{
+      margin-top: 10px;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .btn{
+      appearance:none;
+      border:1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 13px;
+      line-height: 1;
+      cursor:pointer;
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+    }
+    .btn:hover{ border-color:#cfcfcf; }
+    .btn:active{ transform: translateY(1px); }
+    .btn:focus{ outline: 2px solid rgba(0,0,0,.15); outline-offset: 2px; }
+
+    .btn small{ color: var(--muted); font-weight: 500; }
+
+    @media (max-width: 860px){
+      .banner{
+        height:auto;
+        padding:18px;
+        flex-direction:column;
+        align-items:flex-start;
+      }
+      .logo-wrap{ width:100%; }
+      .copy{ max-width:100%; }
+      .cta-line{ white-space:normal; }
+    }
+  </style>
+</head>
+<body>
+  <main class="banner" role="main">
+    <section class="logo-wrap" aria-label="Mărtișor logo">
+      <!-- Put martisor-word.png in the same folder as this HTML -->
+      <img class="logo" src="martisor-word.png" alt="Mărtișor" />
+    </section>
+
+    <section class="copy" aria-label="Event details">
+      <p>Celebrate spring the Romanian way. Experience the live creation of a large scale martisor: a work exploring memory. Join us for the performance, food, and community.</p>
+      <p class="date">Sunday March 1st at 2:00 pm</p>
+
+      <div class="cta-line">
+        <span class="chev">&gt;</span>
+        <a class="cta" href="#" id="revealLink">Click here to reveal address</a>
+
+        <span class="address" id="addressWrap">
+          <a
+            id="addressLink"
+            href="https://www.google.com/maps/search/?api=1&query=366%20Devoe%20St%20East%20Williamsburg"
+            target="_blank"
+            rel="noopener noreferrer"
+          >366 DEVOE ST EAST WILLIAMSBURG</a>
+        </span>
+      </div>
+
+      <div class="calendar-actions" aria-label="Add to calendar">
+        <button class="btn" id="downloadIcsBtn" type="button" aria-label="Download ICS file">
+          Download .ics <small>(Apple/Outlook)</small>
+        </button>
+
+        <a class="btn" id="gcalBtn" href="https://calendar.google.com/calendar/render?action=TEMPLATE&text=Martisor%20Performance&details=Celebrate%20spring%20the%20Romanian%20way.%20Experience%20the%20live%20creation%20of%20a%20large%20scale%20martisor%3A%20a%20work%20exploring%20memory.%20Join%20us%20for%20the%20performance%2C%20food%2C%20and%20community.&location=366%20Devoe%20St%20East%20Williamsburg&dates=20260301T140000%2F20260301T170000&ctz=America%2FNew_York" target="_blank" rel="noopener noreferrer" aria-label="Add to Google Calendar">
+          Add to Google Calendar
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      // Address reveal
+      const link = document.getElementById("revealLink");
+      const addressWrap = document.getElementById("addressWrap");
+
+      let shown = false;
+
+      link.addEventListener("click", (e) => {
+        e.preventDefault();
+        shown = !shown;
+
+        addressWrap.classList.toggle("show", shown);
+        link.textContent = shown ? "Address:" : "Click here to reveal address";
+      });
+
+      // Calendar (.ics) download
+      const downloadBtn = document.getElementById("downloadIcsBtn");
+
+      const eventData = {
+        title: "Martisor Performance",
+        description: "Celebrate spring the Romanian way. Experience the live creation of a large scale martisor: a work exploring memory. Join us for the performance, food, and community.",
+        location: "366 Devoe St East Williamsburg",
+        tzid: "America/New_York",
+        dtStart: "20260301T140000",
+        dtEnd: "20260301T170000"
+      };
+
+      function buildIcs(data) {
+        const nowUtc = new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
+        const uid = "martisor-" + Math.random().toString(16).slice(2) + "@invite";
+
+        const esc = (s) => String(s)
+          .replace(/\\/g, "\\\\")
+          .replace(/\n/g, "\\n")
+          .replace(/\r/g, "")
+          .replace(/,/g, "\\,")
+          .replace(/;/g, "\\;");
+
+        return [
+          "BEGIN:VCALENDAR",
+          "VERSION:2.0",
+          "PRODID:-//MARTISOR//Invite//EN",
+          "CALSCALE:GREGORIAN",
+          "METHOD:PUBLISH",
+          "BEGIN:VEVENT",
+          "UID:" + uid,
+          "DTSTAMP:" + nowUtc,
+          "SUMMARY:" + esc(data.title),
+          "DESCRIPTION:" + esc(data.description),
+          "LOCATION:" + esc(data.location),
+          "DTSTART;TZID=" + data.tzid + ":" + data.dtStart,
+          "DTEND;TZID=" + data.tzid + ":" + data.dtEnd,
+          "END:VEVENT",
+          "END:VCALENDAR"
+        ].join("\r\n");
+      }
+
+      downloadBtn.addEventListener("click", () => {
+        const ics = buildIcs(eventData);
+        const blob = new Blob([ics], { type: "text/calendar;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "martisor-performance.ics";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      });
+    })();
+  </script>
+</body>
+</html>
