@@ -439,7 +439,7 @@ const SPECIAL = {
   support: {
     id: "support",
     name: "Thank you for support",
-    preview: ""//"The RCI and The NY Romanians Group",
+    preview: "Thank you",
     time: "12:26 PM",
     badge: "1",
     avatarSrc: "images/e.jpg",
