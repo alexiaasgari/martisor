@@ -439,7 +439,7 @@ const SPECIAL = {
   support: {
     id: "support",
     name: "Thank you for support",
-    preview: "The Romanian Cultural Institute and The New York Romanians Group",
+    preview: "The RCI and The NY Romanians Group",
     time: "12:26 PM",
     badge: "1",
     avatarSrc: "images/e.jpg",
@@ -976,11 +976,11 @@ async function playSupport(token, { withTyping = true } = {}) {
   if (!guardSequence(token)) return;
 
   const steps = [
-    {
-      thankYouText: "We want to thank the Romanian Cultural Institute for their support",
-      logoUrl: rciLogoUrl,
-      linkUrl: "rciusa.info/",
-    },
+  //  {
+ //     thankYouText: "We want to thank the Romanian Cultural Institute for their support",
+      // logoUrl: rciLogoUrl,
+     // linkUrl: "rciusa.info/",
+   // },
     {
       thankYouText: "We want to thank the New York Romanians Group for their support",
       logoUrl: nyrgLogoUrl,
