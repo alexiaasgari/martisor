@@ -469,7 +469,7 @@ const SPECIAL = {
   support: {
     id: "support",
     name: "Thank you for support",
-    preview: "Thank you",
+    preview: "Support the Art",
     time: "12:26 PM",
     badge: "1",
     avatarSrc: "images/e.jpg",
@@ -696,14 +696,26 @@ function appendTextMsg({ direction = "incoming", html = "", timeText = "" }) {
   return msg;
 }
 
-function appendPhotoMsg({ direction = "incoming", src, caption = "", timeText = "" }) {
+function appendPhotoMsg({ direction = "incoming", src, caption = "", timeText = "", href = "" }) {
   const msg = document.createElement("div");
   msg.className = `msg msg--${direction}`;
 
   const bubble = document.createElement("div");
   bubble.className = `bubble bubble--${direction}`;
 
-  bubble.appendChild(createPhoto(src));
+  const photoEl = createPhoto(src);
+
+  if (href) {
+    const a = document.createElement("a");
+    a.className = "photo-link";
+    a.href = href;
+    a.target = "_blank";
+    a.rel = "noopener";
+    a.appendChild(photoEl);
+    bubble.appendChild(a);
+  } else {
+    bubble.appendChild(photoEl);
+  }
 
   if (caption) {
     const cap = document.createElement("div");
@@ -1002,56 +1014,74 @@ async function playSupport(token, { withTyping = true } = {}) {
   if (!guardSequence(token)) return;
   dynamicMount.dataset.thread = "support";
 
-  // Resolve optional logo assets up-front so we can skip missing images entirely.
-  const { rciLogoUrl, nyrgLogoUrl } = await resolveSupportAssets();
-  if (!guardSequence(token)) return;
+  // Links (kept here so they're easy to update; these values already exist in the file).
+  const RCI_URL = "rciusa.info/";
+  const NYRG_URL = "https://instagram.com/newyorkromaniangroup/";
+  const VENMO_URL = "https://venmo.com/u/Alexia-Asgari";
 
-  const steps = [
-  //  {
- //     thankYouText: "We want to thank the Romanian Cultural Institute for their support",
-      // logoUrl: rciLogoUrl,
-     // linkUrl: "rciusa.info/",
-   // },
+  const rciSafeUrl = normalizeUrl(RCI_URL);
+  const nyrgSafeUrl = normalizeUrl(NYRG_URL);
+  const venmoSafeUrl = normalizeUrl(VENMO_URL);
+
+  const rciLabel = displayUrl(rciSafeUrl) || rciSafeUrl;
+  const nyrgLabel = displayUrl(nyrgSafeUrl) || nyrgSafeUrl;
+
+  // Tip jar image (clickable) — try /images first, then project root.
+  const TIPJAR_IMAGE_CANDIDATES = ["images/tipjar.gif", "tipjar.gif"];
+  let tipJarSrc = TIPJAR_IMAGE_CANDIDATES[0];
+  for (const c of TIPJAR_IMAGE_CANDIDATES) {
+    // eslint-disable-next-line no-await-in-loop
+    const ok = await assetExists(c);
+    if (ok) {
+      tipJarSrc = c;
+      break;
+    }
+  }
+
+  const msgs = [
     {
-      thankYouText: "We want to thank the New York Romanians Group for their support",
-      logoUrl: nyrgLogoUrl,
-      linkUrl: "https://instagram.com/newyorkromaniangroup/",
+      type: "text",
+      html: "Thank you to the RCI and the NYRG for their support in cultivating community for this effort",
     },
+    { type: "text", html: "Read more about the organizations:" },
+    {
+      type: "text",
+      html: `<a href="${rciSafeUrl}" target="_blank" rel="noopener">${rciLabel}</a>`,
+    },
+    {
+      type: "text",
+      html: `<a href="${nyrgSafeUrl}" target="_blank" rel="noopener">${nyrgLabel}</a>`,
+    },
+    {
+      type: "text",
+      html: "If you would like to support the artists that put this together (Alexia Asgari and Nicolette Casalan):",
+    },
+    {
+      type: "text",
+      html: `<a href="${venmoSafeUrl}" target="_blank" rel="noopener">Click here to support <3</a>`,
+    },
+    // Show a tip jar image under the link; clicking the image opens Venmo.
+    { type: "photo", src: tipJarSrc, href: venmoSafeUrl },
   ];
 
-  for (const s of steps) {
+  for (const m of msgs) {
     if (withTyping) {
       await showTyping(token, randInt(650, 1200));
       if (!guardSequence(token)) return;
     }
-    appendTextMsg({ direction: "incoming", html: s.thankYouText });
 
-    // Optional logo as an image message (only if present).
-    if (s.logoUrl) {
-      if (withTyping) {
-        await showTyping(token, randInt(650, 1200));
-        if (!guardSequence(token)) return;
-      }
-      appendPhotoMsg({ direction: "incoming", src: s.logoUrl });
+    if (m.type === "photo") {
+      appendPhotoMsg({ direction: "incoming", src: m.src, href: m.href });
+    } else {
+      appendTextMsg({ direction: "incoming", html: m.html });
     }
-
-    if (withTyping) {
-      await showTyping(token, randInt(520, 980));
-      if (!guardSequence(token)) return;
-    }
-    const safeUrl = normalizeUrl(s.linkUrl);
-    if (!safeUrl) continue;
-    const label = displayUrl(safeUrl) || safeUrl;
-    appendTextMsg({
-      direction: "incoming",
-      html: `<a href="${safeUrl}" target="_blank" rel="noopener">${label}</a>`,
-    });
 
     if (withTyping) {
       await sleep(randInt(240, 620));
       if (!guardSequence(token)) return;
     }
   }
+
 
   played.support = true;
 }
