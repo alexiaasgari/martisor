@@ -6,6 +6,7 @@
       • Art Details (concept sketch + 3 lines + optional martisor-scans.gif)
       • Mărțișor History (text sequence)
       • RSVP (embedded Tally iframe inside the chat)
+      • Thank you for support (optional org logos + links)
   - No contenteditable anywhere
   - No hide/reveal address panel
   - Fixed avatars for special threads
@@ -435,6 +436,15 @@ const SPECIAL = {
     avatarSrc: "images/d.jpg",
     thread: "rsvp",
   },
+  support: {
+    id: "support",
+    name: "Thank you for support",
+    preview: "The Romanian Cultural Institute and The New York Romanians Group",
+    time: "12:26 PM",
+    badge: "1",
+    avatarSrc: "images/e.jpg",
+    thread: "support",
+  },
 };
 
 function generateGenericChat() {
@@ -517,6 +527,7 @@ function animateIntroThenOpen() {
 
   const plan = [
     { type: "random" },
+    { type: "special", key: "support" },
     { type: "special", key: "rsvp" },
     { type: "special", key: "history" },
     { type: "special", key: "art" },
@@ -733,6 +744,7 @@ const played = {
   event: false,
   art: false,
   history: false,
+  support: false,
 };
 
 const EVENT_DETAILS_TEXTS = [
@@ -759,6 +771,55 @@ const HISTORY_TEXTS = [
   "In modern times, the string is usually attached to small charms like snowdrops, ladybugs, or four-leaf clovers for good luck.",
   "The tradition concludes by tying the red and white string to the branch of a flowering fruit tree to ensure health and prosperity.",
 ];
+
+// Support thread assets (logos are optional and will only render if found)
+const SUPPORT_RCI_LOGO_CANDIDATES = [
+  "images/romanianculturalinstitute.jpg",
+  "romanianculturalinstitute.jpg",
+];
+
+const SUPPORT_NYRG_LOGO_CANDIDATES = [
+  "images/newyorkromaniansgroup.jpg",
+  "newyorkromaniansgroup.jpg",
+];
+
+let supportAssetsResolved = false;
+let supportRciLogoUrl = null;
+let supportNyrgLogoUrl = null;
+
+async function resolveSupportAssets() {
+  if (supportAssetsResolved) {
+    return {
+      rciLogoUrl: supportRciLogoUrl,
+      nyrgLogoUrl: supportNyrgLogoUrl,
+    };
+  }
+
+  // Try candidates in order; if none found, keep url as null.
+  for (const c of SUPPORT_RCI_LOGO_CANDIDATES) {
+    // eslint-disable-next-line no-await-in-loop
+    const ok = await assetExists(c);
+    if (ok) {
+      supportRciLogoUrl = c;
+      break;
+    }
+  }
+
+  for (const c of SUPPORT_NYRG_LOGO_CANDIDATES) {
+    // eslint-disable-next-line no-await-in-loop
+    const ok = await assetExists(c);
+    if (ok) {
+      supportNyrgLogoUrl = c;
+      break;
+    }
+  }
+
+  supportAssetsResolved = true;
+  return {
+    rciLogoUrl: supportRciLogoUrl,
+    nyrgLogoUrl: supportNyrgLogoUrl,
+  };
+}
 
 async function playEventDetails(token) {
   if (!guardSequence(token)) return;
@@ -906,6 +967,62 @@ async function playRSVP(token) {
   appendEmbedMsg();
 }
 
+async function playSupport(token, { withTyping = true } = {}) {
+  if (!guardSequence(token)) return;
+  dynamicMount.dataset.thread = "support";
+
+  // Resolve optional logo assets up-front so we can skip missing images entirely.
+  const { rciLogoUrl, nyrgLogoUrl } = await resolveSupportAssets();
+  if (!guardSequence(token)) return;
+
+  const steps = [
+    {
+      thankYouText: "We want to thank the Romanian Cultural Institute for their support",
+      logoUrl: rciLogoUrl,
+      linkUrl: "https://www.rciusa.info/",
+    },
+    {
+      thankYouText: "We want to thank the New York Romanians Group for their support",
+      logoUrl: nyrgLogoUrl,
+      linkUrl: "https://www.instagram.com/newyorkromaniangroup/",
+    },
+  ];
+
+  for (const s of steps) {
+    if (withTyping) {
+      await showTyping(token, randInt(650, 1200));
+      if (!guardSequence(token)) return;
+    }
+    appendTextMsg({ direction: "incoming", html: s.thankYouText });
+
+    // Optional logo as an image message (only if present).
+    if (s.logoUrl) {
+      if (withTyping) {
+        await showTyping(token, randInt(650, 1200));
+        if (!guardSequence(token)) return;
+      }
+      appendPhotoMsg({ direction: "incoming", src: s.logoUrl });
+    }
+
+    if (withTyping) {
+      await showTyping(token, randInt(520, 980));
+      if (!guardSequence(token)) return;
+    }
+    const safeUrl = String(s.linkUrl);
+    appendTextMsg({
+      direction: "incoming",
+      html: `<a href="${safeUrl}" target="_blank" rel="noopener">${safeUrl}</a>`,
+    });
+
+    if (withTyping) {
+      await sleep(randInt(240, 620));
+      if (!guardSequence(token)) return;
+    }
+  }
+
+  played.support = true;
+}
+
 // -----------------------------
 // Navigation
 // -----------------------------
@@ -955,6 +1072,8 @@ function openChat(chat) {
     }
   } else if (chat.thread === "rsvp") {
     playRSVP(token);
+  } else if (chat.thread === "support") {
+    playSupport(token, { withTyping: !played.support });
   } else {
     // Generic chat (lightweight)
     appendTextMsg({ direction: "incoming", html: pick(previewOptions) });
@@ -976,6 +1095,7 @@ function resetExperience() {
   played.event = false;
   played.art = false;
   played.history = false;
+  played.support = false;
 
   // Return to list view
   app.classList.remove("show-chat");
@@ -1001,3 +1121,4 @@ startClock();
 resolveConceptImageUrl();
 addInitialChats(10);
 animateIntroThenOpen();
+
