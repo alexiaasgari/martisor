@@ -1,3 +1,16 @@
+(() => {
+  // Ensure the DOM is available before we query for elements.
+  // This makes the file safe to load from <head> (or via bundlers) without breaking.
+  function onReady(fn) {
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", fn, { once: true });
+    } else {
+      fn();
+    }
+  }
+
+  onReady(() => {
+
 /*
   Mărțișor — WhatsApp-style mock
   - Slower, more sporadic chat-list intro animation
@@ -25,10 +38,12 @@ const chatAvatarImg = document.getElementById("chatAvatarImg");
 
 const dynamicMount = document.getElementById("dynamicMount");
 
-if (!app || !chatList || !dynamicMount) {
-  // Fail safely if the HTML structure isn't present.
+// Fail safely if the HTML structure isn't present.
+// IMPORTANT: This must *stop* execution, otherwise later code will throw.
+if (!app || !chatList || !dynamicMount || !chatNameEl || !chatStatusEl || !chatAvatarEl || !chatAvatarImg) {
   // eslint-disable-next-line no-console
   console.warn("Missing required DOM nodes — app.js not initialized.");
+  return;
 }
 
 
@@ -290,6 +305,21 @@ const RSVP_POPUP_LINK_HTML = `
 `;
 
 const RSVP_EMBED_URL = `https://tally.so/embed/${TALLY_FORM_ID}?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1`;
+
+function normalizeUrl(url) {
+  const raw = String(url || "").trim();
+  if (!raw) return "";
+  if (/^https?:\/\//i.test(raw)) return raw;
+  return `https://${raw.replace(/^\/+/, "")}`;
+}
+
+// Display a URL without the protocol so it looks cleaner in chat bubbles.
+// (The underlying link still uses https:// so it remains clickable everywhere.)
+function displayUrl(url) {
+  const raw = String(url || "").trim();
+  if (!raw) return "";
+  return raw.replace(/^https?:\/\//i, "").replace(/\/+$/, "");
+}
 
 // Art assets (we try a few paths so it works whether you store images in /images or project root)
 const CONCEPT_IMAGE_CANDIDATES = [
@@ -753,6 +783,7 @@ const EVENT_DETAILS_TEXTS = [
   "Join us for the performance, food, and community. Open to all.",
   "<strong>Sunday, March 1st @ 2:00 PM</strong>",
   "<strong>366 Devoe Street, Brooklyn</strong>",
+  RSVP_POPUP_LINK_HTML,
 ];
 
 const ART_DETAILS_TEXTS = [
@@ -984,7 +1015,7 @@ async function playSupport(token, { withTyping = true } = {}) {
     {
       thankYouText: "We want to thank the New York Romanians Group for their support",
       logoUrl: nyrgLogoUrl,
-      linkUrl: "instagram.com/newyorkromaniangroup/",
+      linkUrl: "https://instagram.com/newyorkromaniangroup/",
     },
   ];
 
@@ -1008,10 +1039,12 @@ async function playSupport(token, { withTyping = true } = {}) {
       await showTyping(token, randInt(520, 980));
       if (!guardSequence(token)) return;
     }
-    const safeUrl = String(s.linkUrl);
+    const safeUrl = normalizeUrl(s.linkUrl);
+    if (!safeUrl) continue;
+    const label = displayUrl(safeUrl) || safeUrl;
     appendTextMsg({
       direction: "incoming",
-      html: `<a href="${safeUrl}" target="_blank" rel="noopener">${safeUrl}</a>`,
+      html: `<a href="${safeUrl}" target="_blank" rel="noopener">${label}</a>`,
     });
 
     if (withTyping) {
@@ -1121,4 +1154,7 @@ startClock();
 resolveConceptImageUrl();
 addInitialChats(10);
 animateIntroThenOpen();
+
+  });
+})();
 
