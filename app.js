@@ -979,12 +979,12 @@ async function playSupport(token, { withTyping = true } = {}) {
     {
       thankYouText: "We want to thank the Romanian Cultural Institute for their support",
       logoUrl: rciLogoUrl,
-      linkUrl: "https://www.rciusa.info/",
+      linkUrl: "rciusa.info/",
     },
     {
       thankYouText: "We want to thank the New York Romanians Group for their support",
       logoUrl: nyrgLogoUrl,
-      linkUrl: "https://www.instagram.com/newyorkromaniangroup/",
+      linkUrl: "instagram.com/newyorkromaniangroup/",
     },
   ];
 
