@@ -801,7 +801,8 @@ const EVENT_DETAILS_TEXTS = [
 const ART_DETAILS_TEXTS = [
   "The mărțișor is a Romanian spring tradition: a small braided token of red and white thread, exchanged on March 1st as a symbol of renewal and connection.",
   "Memory is sustained in presence and in practice. Through memory, objects and events become distorted but durational, carried by the collective, across time and place.",
-  "Together we will weave a large mărțișor, strung with bead constructed of a large amalgamation of objects related to memory.",
+  "The work examines culture through the lens of Romanian American artists. Collectively, we will braid a large scale mărțișor, rising approximately 25 to 50 feet in height, strung with a charm sculpted from an computationally-generated amalgamation of scanned objects tied to cultural memory. Community is an essential part of cultural memory. The audience is critical to the piece, taking an interactive role.",
+
 ];
 
 const HISTORY_TEXTS = [
